@@ -1,0 +1,63 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*.so
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+
+# IDE and editors
+
+.vscode/
+.idea/
+
+# Logs
+
+*.log
+
+# Runtime files
+
+*.pid
+*.sock
+
+# Temporary files
+
+*.tmp
+*.temp
+
+# Environment files with real settings
+
+.env
+.env.*
+config/*.env
+
+# Keep example configs in repository
+
+!config/*.env.example
+
+# Recordings
+
+records/
+*.opus
+*.wav
+*.flac
+*.mp3
+*.m4a
+
+# Test recordings
+
+test-recordings/
+
+# Backup files
+
+*.bak
+*.old
+
+# Operating system files
+
+.DS_Store
+Thumbs.db
