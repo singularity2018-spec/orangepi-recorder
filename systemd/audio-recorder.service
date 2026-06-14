@@ -1,0 +1,18 @@
+[Unit]
+Description=Orange Pi Audio Recorder
+After=sound.target
+Wants=sound.target
+
+[Service]
+Type=simple
+User=recorder
+Group=recorder
+EnvironmentFile=/etc/orangepi-recorder/audio-recorder.env
+ExecStart=/opt/orangepi-recorder/bin/audio-recorder.sh
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
