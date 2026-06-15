@@ -17,6 +17,8 @@ Implemented now:
 - Keep failed `.opus.part` files for troubleshooting.
 - Log all actions to stdout for systemd/journald.
 - Handle SIGTERM gracefully by forwarding it to the active `ffmpeg` process.
+- Validate recorder configuration before starting so production failures are clear and early.
+- Provide a `bin/doctor.sh` diagnostics script for dependencies, ALSA device checks, storage checks, disk space, configuration, and systemd status.
 - Provide example environment configuration and a systemd service for the `recorder` user.
 
 Not implemented yet:
@@ -29,11 +31,13 @@ Not implemented yet:
 
 ## Files
 
-- `bin/audio-recorder.sh` — recorder loop and `ffmpeg` invocation.
+- `bin/audio-recorder.sh` — recorder loop, startup validation, and `ffmpeg` invocation.
+- `bin/recorder-common.sh` — shared validation and diagnostic helpers.
+- `bin/doctor.sh` — production diagnostics for dependencies, ALSA, storage, configuration, and systemd status.
 - `config/audio-recorder.env.example` — example configuration.
 - `systemd/audio-recorder.service` — systemd unit for production use.
 - `docs/install-audio-recorder.md` — installation and verification guide.
 
 ## Quick start
 
-See [docs/install-audio-recorder.md](docs/install-audio-recorder.md) for step-by-step installation instructions on Orange Pi Zero2.
+See [docs/install-audio-recorder.md](docs/install-audio-recorder.md) for step-by-step installation instructions on Orange Pi Zero2. After configuring the environment file, run `sudo -u recorder /opt/orangepi-recorder/bin/doctor.sh` to check the host before enabling or restarting the service.
