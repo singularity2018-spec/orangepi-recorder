@@ -54,13 +54,26 @@ record_segment() {
     -y "${part_file}" &
 
   ffmpeg_pid=$!
-  wait "${ffmpeg_pid}"
-  status=$?
+  while :; do
+    wait "${ffmpeg_pid}"
+    status=$?
+
+    if [ "${stop_requested}" -eq 1 ] && [ "${status}" -ge 128 ] && kill -0 "${ffmpeg_pid}" 2>/dev/null; then
+      log "stop requested; waiting for ffmpeg to finish segment finalization"
+      continue
+    fi
+
+    break
+  done
   ffmpeg_pid=""
 
   if [ "${status}" -eq 0 ]; then
     mv "${part_file}" "${final_file}"
-    log "completed segment: ${final_file}"
+    if [ "${stop_requested}" -eq 1 ]; then
+      log "finalized segment after graceful stop: ${final_file}"
+    else
+      log "completed segment: ${final_file}"
+    fi
     return 0
   fi
 

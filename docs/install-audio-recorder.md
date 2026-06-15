@@ -107,4 +107,4 @@ sudo systemctl stop audio-recorder.service
 sudo systemctl restart audio-recorder.service
 ```
 
-The service sends SIGTERM on stop. The script forwards SIGTERM to the active `ffmpeg` process and then exits cleanly.
+The service sends SIGTERM on stop. The script forwards SIGTERM to the active `ffmpeg` process, waits for that process to exit, and then applies the same finalization rule as normal segment completion: status `0` is renamed from hidden `.opus.part` to visible `.opus`, while any non-zero status keeps the `.opus.part` file for troubleshooting. The journal logs whether the stopped segment was finalized or kept.
