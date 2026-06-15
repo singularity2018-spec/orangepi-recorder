@@ -42,7 +42,7 @@ Clone or copy this repository to `/opt/orangepi-recorder`:
 ```sh
 sudo git clone <repository-url> /opt/orangepi-recorder
 sudo chown -R root:root /opt/orangepi-recorder
-sudo chmod +x /opt/orangepi-recorder/bin/audio-recorder.sh
+sudo chmod +x /opt/orangepi-recorder/bin/audio-recorder.sh /opt/orangepi-recorder/bin/doctor.sh /opt/orangepi-recorder/bin/recorder-common.sh
 ```
 
 ## 5. Configure the recorder
@@ -64,9 +64,21 @@ SAMPLE_RATE=16000
 CHANNELS=1
 ```
 
-`SEGMENT_SECONDS=1800` creates 30-minute files. During recording the current file is hidden and ends with `.opus.part`; after `ffmpeg` exits successfully it is renamed to a visible `.opus` file. If `ffmpeg` fails, the `.part` file is kept for troubleshooting.
+`SEGMENT_SECONDS=1800` creates 30-minute files. `SEGMENT_SECONDS`, `SAMPLE_RATE`, and `CHANNELS` must be positive integers. Before recording starts, the recorder validates that `ffmpeg` and `arecord` are executable, the configured ALSA device exists, and `RECORDS_DIR` exists and is writable. During recording the current file is hidden and ends with `.opus.part`; after `ffmpeg` exits successfully it is renamed to a visible `.opus` file. If `ffmpeg` fails, the `.part` file is kept for troubleshooting.
 
-## 6. Install and start the systemd service
+## 6. Run diagnostics before starting
+
+Use the doctor script after editing the environment file and any time hardware, storage, or service configuration changes:
+
+```sh
+sudo -u recorder /opt/orangepi-recorder/bin/doctor.sh
+```
+
+The doctor reports `ffmpeg` and `arecord` availability, the configured ALSA device, whether that device exists, whether `RECORDS_DIR` exists and is writable, free disk space, the current recorder configuration, and systemd service status. If `/etc/orangepi-recorder/audio-recorder.env` is readable, the doctor loads it automatically; set `RECORDER_ENV_FILE=/path/to/file` to check a different environment file.
+
+Fix any `FAIL` lines before enabling or restarting the recorder.
+
+## 7. Install and start the systemd service
 
 ```sh
 sudo cp /opt/orangepi-recorder/systemd/audio-recorder.service /etc/systemd/system/audio-recorder.service
@@ -74,7 +86,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now audio-recorder.service
 ```
 
-## 7. Watch logs and verify output
+## 8. Watch logs and verify output
 
 All recorder logs go to stdout, so systemd stores them in journald:
 
@@ -88,7 +100,7 @@ Check created files:
 find /records -type f \( -name '*.opus' -o -name '*.opus.part' \)
 ```
 
-## 8. Stop or restart
+## 9. Stop or restart
 
 ```sh
 sudo systemctl stop audio-recorder.service
