@@ -42,8 +42,8 @@ record_segment() {
     -nostdin \
     -loglevel info \
     -f alsa \
-    -ac "${CHANNELS}" \
-    -ar "${SAMPLE_RATE}" \
+    -channels "${CHANNELS}" \
+    -sample_rate "${SAMPLE_RATE}" \
     -i "${AUDIO_DEVICE}" \
     -t "${SEGMENT_SECONDS}" \
     -vn \
