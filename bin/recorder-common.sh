@@ -7,6 +7,7 @@
 : "${SAMPLE_RATE:=16000}"
 : "${CHANNELS:=1}"
 : "${RECORDER_SERVICE:=audio-recorder.service}"
+: "${GRACEFUL_STOP_TIMEOUT_SECONDS:=15}"
 
 log() {
   printf '%s %s\n' "$(date --iso-8601=seconds)" "$*"
@@ -14,9 +15,9 @@ log() {
 
 request_stop() {
   stop_requested=1
-  log "stop requested; finishing current ffmpeg process"
-  if [ -n "${ffmpeg_pid:-}" ] && kill -0 "${ffmpeg_pid}" 2>/dev/null; then
-    kill -TERM "${ffmpeg_pid}" 2>/dev/null || true
+  log "stop requested; requesting graceful ffmpeg shutdown"
+  if declare -F recorder_request_ffmpeg_stop >/dev/null 2>&1; then
+    recorder_request_ffmpeg_stop
   fi
 }
 
@@ -101,6 +102,11 @@ validate_recorder_config() {
 
   if ! is_positive_integer "${CHANNELS}"; then
     log "ERROR: CHANNELS must be a positive integer, got '${CHANNELS}'."
+    errors=$((errors + 1))
+  fi
+
+  if ! is_positive_integer "${GRACEFUL_STOP_TIMEOUT_SECONDS}"; then
+    log "ERROR: GRACEFUL_STOP_TIMEOUT_SECONDS must be a positive integer number of seconds, got '${GRACEFUL_STOP_TIMEOUT_SECONDS}'."
     errors=$((errors + 1))
   fi
 
