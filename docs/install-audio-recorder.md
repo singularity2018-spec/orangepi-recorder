@@ -62,9 +62,10 @@ SEGMENT_SECONDS=1800
 OPUS_BITRATE=24k
 SAMPLE_RATE=16000
 CHANNELS=1
+GRACEFUL_STOP_TIMEOUT_SECONDS=15
 ```
 
-`SEGMENT_SECONDS=1800` creates 30-minute files. `SEGMENT_SECONDS`, `SAMPLE_RATE`, and `CHANNELS` must be positive integers. Before recording starts, the recorder validates that `ffmpeg` and `arecord` are executable, the configured ALSA device exists, and `RECORDS_DIR` exists and is writable. During recording the current file is hidden and ends with `.opus.part`; after `ffmpeg` exits successfully it is renamed to a visible `.opus` file. If `ffmpeg` fails, the `.part` file is kept for troubleshooting.
+`SEGMENT_SECONDS=1800` creates 30-minute files. `GRACEFUL_STOP_TIMEOUT_SECONDS=15` gives `ffmpeg` 15 seconds to finalize after the recorder sends `q` to stdin during service stop. `SEGMENT_SECONDS`, `SAMPLE_RATE`, `CHANNELS`, and `GRACEFUL_STOP_TIMEOUT_SECONDS` must be positive integers. Before recording starts, the recorder validates that `ffmpeg` and `arecord` are executable, the configured ALSA device exists, and `RECORDS_DIR` exists and is writable. During recording the current file is hidden and ends with `.opus.part`; after `ffmpeg` exits successfully it is renamed to a visible `.opus` file. If `ffmpeg` fails, the `.part` file is kept for troubleshooting.
 
 ## 6. Run diagnostics before starting
 
@@ -107,4 +108,4 @@ sudo systemctl stop audio-recorder.service
 sudo systemctl restart audio-recorder.service
 ```
 
-The service sends SIGTERM on stop. The script forwards SIGTERM to the active `ffmpeg` process, waits for that process to exit, and then applies the same finalization rule as normal segment completion: status `0` is renamed from hidden `.opus.part` to visible `.opus`, while any non-zero status keeps the `.opus.part` file for troubleshooting. The journal logs whether the stopped segment was finalized or kept.
+The service sends SIGTERM to the recorder script on stop. The script does not forward SIGTERM to `ffmpeg` during normal shutdown; it sends `q` to the active `ffmpeg` process stdin, waits up to `GRACEFUL_STOP_TIMEOUT_SECONDS` for container finalization, and only then falls back to SIGTERM/SIGKILL if needed. The same finalization rule applies as normal segment completion: status `0` is renamed from hidden `.opus.part` to visible `.opus`, while any non-zero status keeps the `.opus.part` file for troubleshooting. The journal logs the stop request, the `q` command, the `ffmpeg` exit status, and whether the segment was finalized or kept.

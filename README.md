@@ -16,7 +16,7 @@ Implemented now:
 - Rename the segment to a visible `.opus` file only after `ffmpeg` exits successfully.
 - Keep failed `.opus.part` files for troubleshooting.
 - Log all actions to stdout for systemd/journald.
-- Handle SIGTERM gracefully by forwarding it to the active `ffmpeg` process.
+- Handle SIGTERM gracefully by sending `q` to the active `ffmpeg` process stdin, with SIGTERM/SIGKILL used only as a timeout fallback.
 - Validate recorder configuration before starting so production failures are clear and early.
 - Provide a `bin/doctor.sh` diagnostics script for dependencies, ALSA device checks, storage checks, disk space, configuration, and systemd status.
 - Provide example environment configuration and a systemd service for the `recorder` user.
