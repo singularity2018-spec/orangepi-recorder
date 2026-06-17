@@ -60,8 +60,14 @@ alsa_device_exists() {
       '
       ;;
     *)
-      escaped_device="$(printf '%s' "${device}" | sed 's/[][\\.^$*+?{}|()]/\\&/g')"
-      arecord -L 2>/dev/null | awk -v device="${escaped_device}" 'BEGIN { pattern="^" device "([[:space:]]|$)" } $0 ~ pattern { found = 1 } END { exit(found ? 0 : 1) }'
+      escaped_device="$(
+        printf '%s' "${device}" | sed 's/[][\\.^$*+?{}|()]/\\&/g'
+      )"
+      arecord -L 2>/dev/null | awk -v device="${escaped_device}" '
+        BEGIN { pattern="^" device "([[:space:]]|$)" }
+        $0 ~ pattern { found = 1 }
+        END { exit(found ? 0 : 1) }
+      '
       ;;
   esac
 }
@@ -70,28 +76,42 @@ validate_recorder_config() {
   local errors=0
 
   if ! command_is_executable ffmpeg; then
-    log "ERROR: ffmpeg was not found or is not executable. Install ffmpeg and make sure it is available in PATH before starting the recorder."
+    log \
+      "ERROR: ffmpeg was not found or is not executable." \
+      "Install ffmpeg and make sure it is available in PATH" \
+      "before starting the recorder."
     errors=$((errors + 1))
   fi
 
   if ! command_is_executable arecord; then
-    log "ERROR: arecord was not found or is not executable. Install alsa-utils so the recorder can verify ALSA capture devices."
+    log \
+      "ERROR: arecord was not found or is not executable." \
+      "Install alsa-utils so the recorder can verify ALSA capture devices."
     errors=$((errors + 1))
   elif ! alsa_device_exists "${AUDIO_DEVICE}"; then
-    log "ERROR: ALSA capture device '${AUDIO_DEVICE}' was not found. Run 'arecord -l' to list hardware devices, then update AUDIO_DEVICE in the recorder configuration."
+    log \
+      "ERROR: ALSA capture device '${AUDIO_DEVICE}' was not found." \
+      "Run 'arecord -l' to list hardware devices," \
+      "then update AUDIO_DEVICE in the recorder configuration."
     errors=$((errors + 1))
   fi
 
   if [ ! -d "${RECORDS_DIR}" ]; then
-    log "ERROR: RECORDS_DIR '${RECORDS_DIR}' does not exist. Create it and assign write permissions to the recorder user before starting."
+    log \
+      "ERROR: RECORDS_DIR '${RECORDS_DIR}' does not exist." \
+      "Create it and assign write permissions to the recorder user before starting."
     errors=$((errors + 1))
   elif [ ! -w "${RECORDS_DIR}" ]; then
-    log "ERROR: RECORDS_DIR '${RECORDS_DIR}' is not writable by user '$(id -un)'. Fix ownership or permissions before starting."
+    log \
+      "ERROR: RECORDS_DIR '${RECORDS_DIR}' is not writable by user '$(id -un)'." \
+      "Fix ownership or permissions before starting."
     errors=$((errors + 1))
   fi
 
   if ! is_positive_integer "${SEGMENT_SECONDS}"; then
-    log "ERROR: SEGMENT_SECONDS must be a positive integer number of seconds, got '${SEGMENT_SECONDS}'."
+    log \
+      "ERROR: SEGMENT_SECONDS must be a positive integer" \
+      "number of seconds, got '${SEGMENT_SECONDS}'."
     errors=$((errors + 1))
   fi
 
@@ -106,12 +126,16 @@ validate_recorder_config() {
   fi
 
   if ! is_positive_integer "${GRACEFUL_STOP_TIMEOUT_SECONDS}"; then
-    log "ERROR: GRACEFUL_STOP_TIMEOUT_SECONDS must be a positive integer number of seconds, got '${GRACEFUL_STOP_TIMEOUT_SECONDS}'."
+    log \
+      "ERROR: GRACEFUL_STOP_TIMEOUT_SECONDS must be a positive integer" \
+      "number of seconds, got '${GRACEFUL_STOP_TIMEOUT_SECONDS}'."
     errors=$((errors + 1))
   fi
 
   if [ "${errors}" -gt 0 ]; then
-    log "ERROR: recorder configuration validation failed with ${errors} problem(s); refusing to start."
+    log \
+      "ERROR: recorder configuration validation failed with ${errors} problem(s);" \
+      "refusing to start."
     return 2
   fi
 
