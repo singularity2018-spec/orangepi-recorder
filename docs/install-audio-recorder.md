@@ -12,7 +12,15 @@ sudo apt install -y ffmpeg alsa-utils git
 ## 2. Create the recorder user and storage directory
 
 ```sh
-sudo useradd --system --create-home --shell /usr/sbin/nologin recorder
+if ! getent group recorder >/dev/null; then
+  sudo groupadd --system recorder
+fi
+
+if ! id -u recorder >/dev/null 2>&1; then
+  sudo useradd --system --create-home --shell /usr/sbin/nologin --gid recorder recorder
+fi
+
+sudo usermod -aG audio recorder
 sudo mkdir -p /records
 sudo chown recorder:recorder /records
 ```
@@ -40,7 +48,7 @@ sudo -u recorder ffmpeg -f alsa -channels 1 -sample_rate 16000 -i hw:1,0 -t 10 -
 Clone or copy this repository to `/opt/orangepi-recorder`:
 
 ```sh
-sudo git clone <repository-url> /opt/orangepi-recorder
+sudo git clone https://github.com/singularity2018-spec/orangepi-recorder.git /opt/orangepi-recorder
 sudo chown -R root:root /opt/orangepi-recorder
 sudo chmod +x /opt/orangepi-recorder/bin/audio-recorder.sh /opt/orangepi-recorder/bin/doctor.sh /opt/orangepi-recorder/bin/recorder-common.sh
 ```
