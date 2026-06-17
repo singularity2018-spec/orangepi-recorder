@@ -49,7 +49,10 @@ print_check "INFO" "configured ALSA device" "${AUDIO_DEVICE}"
 if command_is_executable arecord && alsa_device_exists "${AUDIO_DEVICE}"; then
   print_check "OK" "ALSA device exists" "${AUDIO_DEVICE}"
 else
-  print_check "FAIL" "ALSA device exists" "${AUDIO_DEVICE} was not found; run 'arecord -l' to list capture hardware"
+  print_check \
+    "FAIL" \
+    "ALSA device exists" \
+    "${AUDIO_DEVICE} was not found; run 'arecord -l' to list capture hardware"
   status=1
 fi
 
@@ -61,19 +64,35 @@ else
 fi
 
 if [ -d "${RECORDS_DIR}" ] && [ -w "${RECORDS_DIR}" ]; then
-  print_check "OK" "RECORDS_DIR writable" "${RECORDS_DIR} is writable by $(id -un)"
+  print_check \
+    "OK" \
+    "RECORDS_DIR writable" \
+    "${RECORDS_DIR} is writable by $(id -un)"
 else
-  print_check "FAIL" "RECORDS_DIR writable" "${RECORDS_DIR} is not writable by $(id -un)"
+  print_check \
+    "FAIL" \
+    "RECORDS_DIR writable" \
+    "${RECORDS_DIR} is not writable by $(id -un)"
   status=1
 fi
 
 if [ -d "${RECORDS_DIR}" ]; then
-  print_check "INFO" "free disk space" "$(df -h "${RECORDS_DIR}" | awk 'NR == 2 {print $4 " available on " $1 " (" $5 " used)"}')"
+  print_check \
+    "INFO" \
+    "free disk space" \
+    "$(
+      df -h "${RECORDS_DIR}" \
+        | awk 'NR == 2 {print $4 " available on " $1 " (" $5 " used)"}'
+    )"
 else
   print_check "WARN" "free disk space" "cannot check because RECORDS_DIR does not exist"
 fi
 
-printf '\nCurrent recorder configuration%s:\n' "$([ -r "${ENV_FILE}" ] && printf ' (loaded %s)' "${ENV_FILE}" || printf ' (using environment/defaults)')"
+printf '\nCurrent recorder configuration%s:\n' "$(
+  [ -r "${ENV_FILE}" ] \
+    && printf ' (loaded %s)' "${ENV_FILE}" \
+    || printf ' (using environment/defaults)'
+)"
 printf '  AUDIO_DEVICE=%s\n' "${AUDIO_DEVICE}"
 printf '  RECORDS_DIR=%s\n' "${RECORDS_DIR}"
 printf '  SEGMENT_SECONDS=%s\n' "${SEGMENT_SECONDS}"
@@ -86,7 +105,10 @@ printf '\nConfiguration validation:\n'
 if validate_recorder_config; then
   print_check "OK" "recorder startup validation" "all required checks passed"
 else
-  print_check "FAIL" "recorder startup validation" "fix the errors above before starting the service"
+  print_check \
+    "FAIL" \
+    "recorder startup validation" \
+    "fix the errors above before starting the service"
   status=1
 fi
 
@@ -98,7 +120,10 @@ if command_is_executable systemctl; then
     print_check "WARN" "${RECORDER_SERVICE}" "unit file is not installed"
   fi
 else
-  print_check "WARN" "systemd service status" "systemctl is not available on this system"
+  print_check \
+    "WARN" \
+    "systemd service status" \
+    "systemctl is not available on this system"
 fi
 
 exit "${status}"

@@ -47,7 +47,9 @@ wait_for_ffmpeg() {
       (
         sleep "${GRACEFUL_STOP_TIMEOUT_SECONDS}"
         if kill -0 "${ffmpeg_pid}" 2>/dev/null; then
-          log "WARNING: ffmpeg did not exit within ${GRACEFUL_STOP_TIMEOUT_SECONDS}s after graceful stop request; sending SIGTERM"
+          log \
+            "WARNING: ffmpeg did not exit within ${GRACEFUL_STOP_TIMEOUT_SECONDS}s" \
+            "after graceful stop request; sending SIGTERM"
           kill -TERM "${ffmpeg_pid}" 2>/dev/null || true
           sleep 2
           if kill -0 "${ffmpeg_pid}" 2>/dev/null; then
@@ -95,7 +97,11 @@ record_segment() {
     counter=$((counter + 1))
   done
 
-  log "starting segment: device=${AUDIO_DEVICE} duration=${SEGMENT_SECONDS}s output=${final_file} temp=${part_file}"
+  log \
+    "starting segment: device=${AUDIO_DEVICE}" \
+    "duration=${SEGMENT_SECONDS}s" \
+    "output=${final_file}" \
+    "temp=${part_file}"
 
   coproc FFMPEG_PROCESS {
     ffmpeg \
@@ -135,7 +141,9 @@ record_segment() {
     return 0
   fi
 
-  log "ERROR: ffmpeg exited with status ${status}; kept temp segment for troubleshooting: ${part_file}"
+  log \
+    "ERROR: ffmpeg exited with status ${status};" \
+    "kept temp segment for troubleshooting: ${part_file}"
   return "${status}"
 }
 
@@ -143,7 +151,14 @@ main() {
   trap request_stop TERM INT
   validate_recorder_config || exit $?
 
-  log "audio recorder starting: device=${AUDIO_DEVICE} records_dir=${RECORDS_DIR} segment_seconds=${SEGMENT_SECONDS} bitrate=${OPUS_BITRATE} sample_rate=${SAMPLE_RATE} channels=${CHANNELS} graceful_stop_timeout_seconds=${GRACEFUL_STOP_TIMEOUT_SECONDS}"
+  log \
+    "audio recorder starting: device=${AUDIO_DEVICE}" \
+    "records_dir=${RECORDS_DIR}" \
+    "segment_seconds=${SEGMENT_SECONDS}" \
+    "bitrate=${OPUS_BITRATE}" \
+    "sample_rate=${SAMPLE_RATE}" \
+    "channels=${CHANNELS}" \
+    "graceful_stop_timeout_seconds=${GRACEFUL_STOP_TIMEOUT_SECONDS}"
 
   while [ "${stop_requested}" -eq 0 ]; do
     if ! record_segment; then
