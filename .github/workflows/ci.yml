@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Shell and systemd checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt systemd
+
+      - name: Bash syntax check
+        run: |
+          bash -n bin/*.sh
+          if compgen -G "tests/*.sh" > /dev/null; then
+            bash -n tests/*.sh
+          fi
+
+      - name: ShellCheck
+        run: |
+          shellcheck bin/*.sh
+          if compgen -G "tests/*.sh" > /dev/null; then
+            shellcheck tests/*.sh
+          fi
+
+      - name: shfmt formatting check
+        run: |
+          shfmt -d bin/*.sh
+          if compgen -G "tests/*.sh" > /dev/null; then
+            shfmt -d tests/*.sh
+          fi
+
+      - name: Run tests
+        run: |
+          if compgen -G "tests/*.sh" > /dev/null; then
+            for test_script in tests/*.sh; do
+              bash "$test_script"
+            done
+          fi
+
+      - name: Verify systemd units
+        run: |
+          systemd-analyze verify systemd/*.service
