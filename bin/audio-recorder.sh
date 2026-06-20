@@ -21,6 +21,7 @@ recorder_request_ffmpeg_stop() {
   fi
 
   if [ -n "${ffmpeg_stdin_fd:-}" ]; then
+    # shellcheck disable=SC2261 # False positive: stdout goes to ffmpeg stdin FD; stderr goes to /dev/null.
     printf 'q\n' >&"${ffmpeg_stdin_fd}" 2>/dev/null || true
     ffmpeg_stop_sent=1
     log "sent q to ffmpeg stdin for graceful shutdown"

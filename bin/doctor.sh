@@ -6,6 +6,7 @@ ENV_FILE="${RECORDER_ENV_FILE:-/etc/orangepi-recorder/audio-recorder.env}"
 
 if [ -r "${ENV_FILE}" ]; then
   # shellcheck source=/etc/orangepi-recorder/audio-recorder.env
+  # shellcheck disable=SC1091 # ENV_FILE is selected at runtime and only sourced after a readability check.
   . "${ENV_FILE}"
 fi
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2034 # Defaults are consumed by scripts that source this shared file.
 : "${AUDIO_DEVICE:=hw:1,0}"
 : "${RECORDS_DIR:=/records}"
 : "${SEGMENT_SECONDS:=1800}"
